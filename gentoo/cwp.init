@@ -1,0 +1,24 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+source /usr/share/cwp/init.sh
+
+depend() {
+	need net
+	use apache*
+	after ip*tables
+}
+
+start() {
+	ebegin "Starting Captive Web Portal"
+	cwp_start
+	eend ${?}
+}
+
+stop() {
+	ebegin "Stopping Captive Web Portal"
+	cwp_stop
+	eend ${?}
+}

@@ -1,0 +1,80 @@
+CWP_DIR="@pkgdatadir@"
+CWP_IP6T="@IP6TABLES_PATH@"
+CWP_IP4T="@IP4TABLES_PATH@"
+CWP_EBT="@EBTABLES_PATH@"
+CWP_PHP="@PHP_PATH@"
+
+cwp_start() {
+    local ipt chain file
+
+    for ipt in "$CWP_IP6T" "$CWP_IP4T" "$CWP_EBT"; do
+	for chain in INPUT OUTPUT FORWARD; do
+	    "$ipt" -N cwp_$chain 2>/dev/null
+	    "$ipt" -F cwp_$chain
+	    "$ipt" -D $chain -j cwp_$chain 2>/dev/null
+	    "$ipt" -I $chain -j cwp_$chain
+	done
+    done
+
+    for ipt in "$CWP_IP6T" "$CWP_IP4T"; do
+	for chain in PREROUTING OUTPUT POSTROUTING; do
+	    "$ipt" -t mangle -N cwp_$chain 2>/dev/null
+	    "$ipt" -t mangle -F cwp_$chain
+	    "$ipt" -t mangle -D $chain -j cwp_$chain 2>/dev/null
+	    "$ipt" -t mangle -I $chain -j cwp_$chain
+	done
+    done
+
+    for ipt in "$CWP_IP4T" "$CWP_EBT"; do
+	for chain in PREROUTING POSTROUTING; do
+	    "$ipt" -t nat -N cwp_$chain 2>/dev/null
+	    "$ipt" -t nat -F cwp_$chain
+	    "$ipt" -t nat -D $chain -j cwp_$chain 2>/dev/null
+	    "$ipt" -t nat -I $chain -j cwp_$chain
+	done
+    done
+
+    for file in /proc/sys/net/ipv4/ip_forward \
+		/proc/sys/net/ipv6/conf/all/forwarding; do
+	echo 1 > $file
+    done
+
+    /usr/bin/php "$CWP_DIR"/init.php start 2>/dev/null
+}
+
+cwp_stop() {
+    local ipt chain ret
+
+    /usr/bin/php "$CWP_DIR"/init.php stop 2>/dev/null
+    ret=$?
+
+    for ipt in "$CWP_IP6T" "$CWP_IP4T" "$CWP_EBT"; do
+	for chain in INPUT OUTPUT FORWARD; do
+	    "$ipt" -D $chain -j cwp_$chain 2>/dev/null
+	    "$ipt" -F cwp_$chain 2>/dev/null
+	    "$ipt" -X cwp_$chain 2>/dev/null
+	done
+    done
+
+    for ipt in "$CWP_IP6T" "$CWP_IP4T"; do
+	for chain in PREROUTING OUTPUT POSTROUTING; do
+	    "$ipt" -t mangle -D $chain -j cwp_$chain 2>/dev/null
+	    "$ipt" -t mangle -F cwp_$chain 2>/dev/null
+	    "$ipt" -t mangle -X cwp_$chain 2>/dev/null
+	done
+    done
+
+    for ipt in "$CWP_IP4T" "$CWP_EBT"; do
+	for chain in PREROUTING POSTROUTING; do
+	    "$ipt" -t nat -D $chain -j cwp_$chain 2>/dev/null
+	    "$ipt" -t nat -F cwp_$chain 2>/dev/null
+	    "$ipt" -t nat -X cwp_$chain 2>/dev/null
+	done
+    done
+
+    return $ret
+}
+
+cwp_restart() {
+    cwp_stop && cwp_start
+}

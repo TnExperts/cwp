@@ -1,0 +1,8 @@
+<?php
+
+$LIBDIR   = '@pkglibdir@';
+$DATADIR  = '@pkgdatadir@';
+$CONFDIR  = '@sysconfdir@/@PACKAGE_TARNAME@';
+$STATEDIR = '@localstatedir@/@PACKAGE_TARNAME@';
+
+?>

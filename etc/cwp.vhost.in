@@ -1,0 +1,22 @@
+<IfDefine CWP_VHOST>
+    <VirtualHost *:80>
+	Include @pkgdatadir@/@PACKAGE_TARNAME@.common
+    </VirtualHost>
+
+    <IfModule mod_ssl.c>
+	<VirtualHost *:443>
+	    SSLEngine             on
+	    SSLProtocol           all
+	    SSLCipherSuite        HIGH:MEDIUM
+	    SSLCertificateFile    conf/ssl/@PACKAGE_TARNAME@.crt
+	    SSLCertificateKeyFile conf/ssl/@PACKAGE_TARNAME@.key
+
+	    <IfModule mod_setenvif.c>
+		SetEnvIf User-Agent ".*MSIE.*" nokeepalive \
+			 ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+	    </IfModule>
+
+	    Include @pkgdatadir@/@PACKAGE_TARNAME@.common
+	</VirtualHost>
+    </IfModule>
+</IfDefine>

@@ -1,0 +1,20 @@
+DocumentRoot "@pkgdatadir@/htdocs"
+
+<Directory />
+    Options       None
+    AllowOverride None
+
+    Order allow,deny
+    Allow from all
+</Directory>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    <IfModule mod_ssl.c>
+	RewriteRule . /@PACKAGE_TARNAME@.php?ssl=1 [L]
+    </IfModule>
+    <IfModule !mod_ssl.c>
+	RewriteRule . /@PACKAGE_TARNAME@.php?ssl=0 [L]
+    </IfModule>
+</IfModule>

@@ -1,0 +1,8 @@
+<?php
+
+$LIBDIR   = '@abs_top_builddir@/wrapper';
+$DATADIR  = '@abs_top_builddir@';
+$CONFDIR  = '@abs_top_builddir@/etc';
+$STATEDIR = '/var/tmp/@PACKAGE_TARNAME@';
+
+?>
